@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Write It Right — A Technical Writing Module</title>
+<meta name="description" content="A Technical Writing Module for Learners and Professionals Across Fields">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Apply theme as early as possible to prevent flash -->
+<script>
+  (function() {
+    try {
+      var saved = localStorage.getItem('writeitright-theme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved || (prefersDark ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (e) {}
+  })();
+</script>
+
+<style>
+  :root {
+    /* Palette (always available) */
+    --indigo: #465da5;
+    --cream: #ecd1ab;
+    --slate: #8992b3;
+    --mist:  #9ea6b9;
+    --azure: #6f85b8;
+    --mauve: #ae9c9c;
+
+    /* Semantic — light theme (default) */
+    --paper:         #f6efe3;
+    --surface:       #ffffff;
+    --surface-2:     #fbf6ec;
+    --ink:           #1d2240;
+    --ink-soft:      #3a4068;
+    --border:        rgba(29, 34, 64, .08);
+    --border-strong: rgba(29, 34, 64, .15);
+    --hover-tint:    rgba(29, 34, 64, .06);
+    --pdf-bg:        #f0eadd;
+
+    --bg-glow-1: rgba(70, 93, 165, .08);
+    --bg-glow-2: rgba(236, 209, 171, .35);
+    --grain-color: '%231d2240';   /* dark ink for light bg */
+    --grain-opacity: .35;
+
+    --shadow-soft: 0 1px 2px rgba(29,34,64,.06), 0 8px 24px rgba(29,34,64,.08);
+    --shadow-lift: 0 2px 6px rgba(29,34,64,.08), 0 24px 60px rgba(29,34,64,.18);
+
+    --serif: 'Fraunces', 'Times New Roman', serif;
+    --sans:  'Manrope', system-ui, sans-serif;
+    --radius: 14px;
+
+    color-scheme: light;
+  }
+
+  [data-theme="dark"] {
+    --paper:         #0e1428;
+    --surface:       #18203d;
+    --surface-2:     #1f2848;
+    --ink:           #ecd1ab;
+    --ink-soft:      #9ea6b9;
+    --border:        rgba(236, 209, 171, .10);
+    --border-strong: rgba(236, 209, 171, .20);
+    --hover-tint:    rgba(236, 209, 171, .06);
+    --pdf-bg:        #161c34;
+
+    --bg-glow-1: rgba(111, 133, 184, .18);
+    --bg-glow-2: rgba(174, 156, 156, .10);
+    --grain-color: '%23ecd1ab';   /* cream grain on dark bg */
+    --grain-opacity: .12;
+
+    --shadow-soft: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    --shadow-lift: 0 2px 6px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.45);
+
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    background-image:
+      radial-gradient(ellipse at top left, var(--bg-glow-1), transparent 50%),
+      radial-gradient(ellipse at bottom right, var(--bg-glow-2), transparent 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color .35s ease, color .35s ease;
+  }
+
+  /* paper grain */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .11 0 0 0 0 .13 0 0 0 0 .25 0 0 0 .25 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    z-index: 0;
+    transition: opacity .35s ease;
+  }
+  [data-theme="dark"] body::before {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .93 0 0 0 0 .82 0 0 0 0 .67 0 0 0 .35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px clamp(16px, 4vw, 48px) 80px;
+  }
+
+  /* ---------- HEADER ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--indigo);
+  }
+  [data-theme="dark"] .brand { color: var(--cream); }
+
+  .brand-mark {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--indigo);
+    color: var(--cream);
+    display: grid; place-items: center;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .meta {
+    font-size: .82rem;
+    color: var(--ink-soft);
+    letter-spacing: .03em;
+    text-transform: uppercase;
+  }
+
+  /* theme toggle */
+  .theme-toggle {
+    appearance: none;
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: all .25s ease;
+    box-shadow: var(--shadow-soft);
+  }
+  .theme-toggle:hover {
+    border-color: var(--indigo);
+    color: var(--indigo);
+    transform: translateY(-1px);
+  }
+  [data-theme="dark"] .theme-toggle:hover {
+    color: var(--cream);
+    border-color: var(--cream);
+  }
+  .theme-toggle svg {
+    width: 18px; height: 18px;
+    transition: transform .4s cubic-bezier(.2,.9,.3,1.3);
+  }
+  .theme-toggle:hover svg { transform: rotate(20deg); }
+  .theme-toggle .icon-moon { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding: 24px 0 56px;
+    position: relative;
+  }
+  @media (min-width: 900px) {
+    .hero { grid-template-columns: 1.4fr 1fr; align-items: end; }
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--azure);
+    margin-bottom: 24px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 36px; height: 1px;
+    background: var(--azure);
+  }
+
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(3rem, 9vw, 6.5rem);
+    line-height: .92;
+    letter-spacing: -.02em;
+    color: var(--ink);
+  }
+  h1.title .it {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--indigo);
+  }
+  h1.title .right {
+    display: block;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--indigo);
+    position: relative;
+    width: fit-content;
+  }
+  [data-theme="dark"] h1.title .it,
+  [data-theme="dark"] h1.title .right { color: var(--azure); }
+  h1.title .right::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 8%;
+    height: 14px;
+    background: var(--cream);
+    z-index: -1;
+    transform: skew(-12deg);
+  }
+  [data-theme="dark"] h1.title .right::after {
+    background: var(--cream);
+    opacity: .45;
+  }
+
+  .subtitle {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+    color: var(--ink-soft);
+    max-width: 36ch;
+    margin-top: 28px;
+    line-height: 1.4;
+  }
+
+  /* decorative side card */
+  .hero-aside {
+    position: relative;
+    padding: 28px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--azure) 100%);
+    color: var(--cream);
+    box-shadow: var(--shadow-lift);
+    overflow: hidden;
+    min-height: 240px;
+  }
+  .hero-aside::before {
+    content: "";
+    position: absolute;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: var(--cream);
+    opacity: .12;
+    top: -120px; right: -80px;
+  }
+  .hero-aside .qmark {
+    position: absolute;
+    bottom: -40px; right: 8px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 18rem;
+    line-height: 1;
+    color: rgba(236, 209, 171, .18);
+    user-select: none;
+  }
+  .hero-aside .quote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 1.45rem;
+    line-height: 1.35;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-aside .quote-attr {
+    margin-top: 18px;
+    font-family: var(--sans);
+    font-style: normal;
+    font-size: .78rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--cream);
+    opacity: .8;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- PORTAL TOGGLE ---------- */
+  .portal-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    transition: background-color .35s ease, border-color .35s ease;
+  }
+  .portal-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+  .portal-info .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--azure);
+    box-shadow: 0 0 0 4px rgba(111, 133, 184, .18);
+  }
+  .portal-info[data-mode="teacher"] .dot {
+    background: var(--mauve);
+    box-shadow: 0 0 0 4px rgba(174, 156, 156, .25);
+  }
+  .portal-info .label {
+    font-size: .72rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .portal-info .title-line {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.15rem;
+    color: var(--ink);
+  }
+
+  .toggle {
+    display: inline-flex;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .toggle button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: .85rem;
+    letter-spacing: .03em;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all .25s ease;
+  }
+  .toggle button.active {
+    background: var(--indigo);
+    color: var(--cream);
+    box-shadow: var(--shadow-soft);
+  }
+  .toggle button:not(.active):hover {
+    color: var(--ink);
+  }
+
+  /* ---------- VIEWER ---------- */
+  .viewer {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lift);
+    overflow: hidden;
+    min-height: 720px;
+    transition: background-color .35s ease, border-color .35s ease;
+  }
+  .viewer-frame {
+    width: 100%;
+    height: 80vh;
+    min-height: 700px;
+    border: none;
+    display: block;
+    background: var(--pdf-bg);
+  }
+
+  .viewer-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(to bottom, var(--surface), var(--surface-2));
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .viewer-toolbar .file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .85rem;
+    color: var(--ink-soft);
+    min-width: 0;
+  }
+  .viewer-toolbar .file-info strong {
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .viewer-toolbar .actions {
+    display: flex;
+    gap: 8px;
+  }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: .82rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .2s ease;
+  }
+  .btn:hover {
+    background: var(--surface-2);
+    border-color: var(--indigo);
+    color: var(--indigo);
+  }
+  [data-theme="dark"] .btn:hover {
+    color: var(--cream);
+    border-color: var(--cream);
+  }
+  .btn-primary {
+    background: var(--indigo);
+    color: var(--cream);
+    border-color: var(--indigo);
+  }
+  .btn-primary:hover {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  [data-theme="dark"] .btn-primary {
+    background: var(--azure);
+    border-color: var(--azure);
+    color: var(--paper);
+  }
+  [data-theme="dark"] .btn-primary:hover {
+    background: var(--cream);
+    color: var(--paper);
+    border-color: var(--cream);
+  }
+
+  /* ---------- LOGIN MODAL ---------- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(29, 34, 64, .55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    animation: fadeIn .25s ease;
+  }
+  [data-theme="dark"] .modal-backdrop { background: rgba(0, 0, 0, .7); }
+  .modal-backdrop.open { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--paper);
+    border-radius: 18px;
+    padding: 40px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: var(--shadow-lift);
+    position: relative;
+    animation: modalIn .35s cubic-bezier(.2,.9,.3,1.2);
+    border: 1px solid var(--border);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 2rem;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .modal h2 em {
+    color: var(--indigo);
+    font-weight: 500;
+  }
+  .modal p.lead {
+    color: var(--ink-soft);
+    font-size: .95rem;
+    margin-bottom: 24px;
+  }
+  .modal label {
+    display: block;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .modal input[type="password"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--surface);
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .modal input[type="password"]:focus {
+    outline: none;
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 4px rgba(70, 93, 165, .12);
+  }
+  [data-theme="dark"] .modal input[type="password"]:focus {
+    border-color: var(--azure);
+    box-shadow: 0 0 0 4px rgba(111, 133, 184, .25);
+  }
+  .modal .error {
+    color: #a23b3b;
+    font-size: .85rem;
+    margin-top: 10px;
+    min-height: 1.2em;
+  }
+  [data-theme="dark"] .modal .error { color: #e09a9a; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: grid; place-items: center;
+    font-size: 1.2rem;
+    transition: all .2s ease;
+  }
+  .modal-close:hover {
+    background: var(--hover-tint);
+    color: var(--ink);
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    margin-top: 64px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .82rem;
+    color: var(--ink-soft);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer .colors {
+    display: flex;
+    gap: 6px;
+  }
+  footer .colors span {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    display: block;
+    border: 1px solid var(--border-strong);
+  }
+
+  /* hide elements smoothly */
+  .hidden { display: none !important; }
+
+  /* mobile tweaks */
+  @media (max-width: 640px) {
+    .hero-aside { padding: 24px; }
+    .hero-aside .qmark { font-size: 12rem; }
+    .modal { padding: 28px; }
+    .modal h2 { font-size: 1.6rem; }
+    .viewer-frame { height: 70vh; min-height: 500px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <div class="brand-mark">W</div>
+      <span>Write It Right</span>
+    </div>
+    <div class="header-right">
+      <div class="meta">A Technical Writing Module</div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme" title="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Module · Edition 01</div>
+      <h1 class="title">
+        Write <span class="it">it</span><br>
+        <span class="right">Right.</span>
+      </h1>
+      <p class="subtitle">A Technical Writing Module for Learners and Professionals Across Fields.</p>
+    </div>
+
+    <aside class="hero-aside" aria-hidden="true">
+      <div class="quote">
+        Good writing is clear thinking made visible — a discipline learned line by line.
+      </div>
+      <div class="quote-attr">— Editor's Note</div>
+      <div class="qmark">"</div>
+    </aside>
+  </section>
+
+  <!-- PORTAL BAR -->
+  <div class="portal-bar">
+    <div class="portal-info" id="portalInfo" data-mode="student">
+      <span class="dot"></span>
+      <div>
+        <div class="label" id="portalLabel">Student Portal</div>
+        <div class="title-line" id="portalTitle">Read & study the module</div>
+      </div>
+    </div>
+
+    <div class="toggle" role="tablist" aria-label="Portal selection">
+      <button id="btnStudent" class="active" role="tab" aria-selected="true">Student</button>
+      <button id="btnTeacher" role="tab" aria-selected="false">Teacher</button>
+    </div>
+  </div>
+
+  <!-- VIEWER -->
+  <div class="viewer">
+    <div class="viewer-toolbar">
+      <div class="file-info">
+        <span>📘</span>
+        <strong id="fileName">Write-It-Right-Student.pdf</strong>
+        <span id="fileNote">— Module without answer key</span>
+      </div>
+      <div class="actions">
+        <a id="downloadLink" class="btn" href="student-module.pdf" download>Download</a>
+        <a id="openLink" class="btn btn-primary" href="student-module.pdf" target="_blank" rel="noopener">Open in new tab</a>
+      </div>
+    </div>
+    <iframe id="pdfFrame" class="viewer-frame" src="student-module.pdf#toolbar=1&navpanes=1&view=FitH" title="PDF Module"></iframe>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>© <span id="year"></span> Write It Right · Technical Writing Module</div>
+    <div class="colors" aria-hidden="true">
+      <span style="background:#465da5"></span>
+      <span style="background:#6f85b8"></span>
+      <span style="background:#8992b3"></span>
+      <span style="background:#9ea6b9"></span>
+      <span style="background:#ae9c9c"></span>
+      <span style="background:#ecd1ab"></span>
+    </div>
+  </footer>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <button class="modal-close" id="modalClose" aria-label="Close">×</button>
+    <h2 id="modalTitle">Teacher <em>access</em></h2>
+    <p class="lead">Enter the teacher password to view the module with the answer key included.</p>
+    <label for="pwd">Password</label>
+    <input type="password" id="pwd" autocomplete="off" placeholder="••••••••">
+    <div class="error" id="errMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="submitBtn">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ────────────────────────────────────────────────
+  // CONFIGURATION — change these as needed
+  // ────────────────────────────────────────────────
+  const TEACHER_PASSWORD = "writeitright2026";   // ← change this to your password
+  const STUDENT_PDF      = "student-module.pdf";  // ← your student PDF filename
+  const TEACHER_PDF      = "teacher-module.pdf";  // ← your teacher PDF filename
+  // ────────────────────────────────────────────────
+
+  const btnStudent = document.getElementById('btnStudent');
+  const btnTeacher = document.getElementById('btnTeacher');
+  const portalInfo = document.getElementById('portalInfo');
+  const portalLabel = document.getElementById('portalLabel');
+  const portalTitle = document.getElementById('portalTitle');
+  const pdfFrame  = document.getElementById('pdfFrame');
+  const fileName  = document.getElementById('fileName');
+  const fileNote  = document.getElementById('fileNote');
+  const dlLink    = document.getElementById('downloadLink');
+  const openLink  = document.getElementById('openLink');
+
+  const modal     = document.getElementById('modal');
+  const pwdInput  = document.getElementById('pwd');
+  const errMsg    = document.getElementById('errMsg');
+  const submitBtn = document.getElementById('submitBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const closeBtn  = document.getElementById('modalClose');
+
+  let unlockedTeacher = false;
+
+  function setStudentMode() {
+    btnStudent.classList.add('active');
+    btnTeacher.classList.remove('active');
+    btnStudent.setAttribute('aria-selected', 'true');
+    btnTeacher.setAttribute('aria-selected', 'false');
+
+    portalInfo.dataset.mode = 'student';
+    portalLabel.textContent = 'Student Portal';
+    portalTitle.textContent = 'Read & study the module';
+
+    pdfFrame.src = STUDENT_PDF + "#toolbar=1&navpanes=1&view=FitH";
+    fileName.textContent = STUDENT_PDF;
+    fileNote.textContent = '— Module without answer key';
+    dlLink.href = STUDENT_PDF;
+    openLink.href = STUDENT_PDF;
+  }
+
+  function setTeacherMode() {
+    btnTeacher.classList.add('active');
+    btnStudent.classList.remove('active');
+    btnTeacher.setAttribute('aria-selected', 'true');
+    btnStudent.setAttribute('aria-selected', 'false');
+
+    portalInfo.dataset.mode = 'teacher';
+    portalLabel.textContent = 'Teacher Portal';
+    portalTitle.textContent = 'Module with answer key';
+
+    pdfFrame.src = TEACHER_PDF + "#toolbar=1&navpanes=1&view=FitH";
+    fileName.textContent = TEACHER_PDF;
+    fileNote.textContent = '— Includes answer key';
+    dlLink.href = TEACHER_PDF;
+    openLink.href = TEACHER_PDF;
+  }
+
+  function openModal() {
+    modal.classList.add('open');
+    errMsg.textContent = '';
+    pwdInput.value = '';
+    setTimeout(() => pwdInput.focus(), 100);
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+  }
+
+  btnStudent.addEventListener('click', setStudentMode);
+
+  btnTeacher.addEventListener('click', () => {
+    if (unlockedTeacher) {
+      setTeacherMode();
+    } else {
+      openModal();
+    }
+  });
+
+  function attemptLogin() {
+    const val = pwdInput.value.trim();
+    if (val === TEACHER_PASSWORD) {
+      unlockedTeacher = true;
+      closeModal();
+      setTeacherMode();
+    } else {
+      errMsg.textContent = 'Incorrect password. Please try again.';
+      pwdInput.focus();
+      pwdInput.select();
+    }
+  }
+
+  submitBtn.addEventListener('click', attemptLogin);
+  pwdInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') attemptLogin();
+    if (e.key === 'Escape') closeModal();
+  });
+  cancelBtn.addEventListener('click', closeModal);
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
+
+  // year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ────────────────────────────────────────────────
+  // Theme toggle
+  // ────────────────────────────────────────────────
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    if (next === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    try { localStorage.setItem('writeitright-theme', next); } catch (e) {}
+  });
+</script>
+</body>
+</html>
